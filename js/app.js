@@ -337,7 +337,7 @@ function renderMyBooksLogin() {
                 <form id="myBooksForm">
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" id="myBooksEmail" required placeholder="Ex: name.branch21@ietlucknow.ac.in">
+                        <input type="email" id="myBooksEmail" required pattern=".*@ietlucknow\\.ac\\.in$" title="Please use your official @ietlucknow.ac.in email address" placeholder="Ex: name.branch21@ietlucknow.ac.in">
                     </div>
                     <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-magnifying-glass"></i> Search Records</button>
                 </form>
@@ -347,7 +347,13 @@ function renderMyBooksLogin() {
 
     document.getElementById('myBooksForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('myBooksEmail').value;
+        const email = document.getElementById('myBooksEmail').value.trim().toLowerCase();
+
+        if (!email.endsWith('@ietlucknow.ac.in')) {
+            showToast("Access Denied: Please use your official @ietlucknow.ac.in email.", "error");
+            return;
+        }
+
         showLoader('Searching library ledger...');
         try {
             const result = await apiGet('getMyBooks', { email });
@@ -574,11 +580,18 @@ function initModals() {
 
     issueForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        const emailVal = document.getElementById('issueEmail').value.trim().toLowerCase();
+        if (!emailVal.endsWith('@ietlucknow.ac.in')) {
+            showToast("Request Denied: Only official @ietlucknow.ac.in emails are permitted.", "error");
+            return;
+        }
+
         const payload = {
             bookId: document.getElementById('issueBookId').value,
             studentName: document.getElementById('issueStudentName').value,
             rollNumber: document.getElementById('issueRollNumber').value,
-            email: document.getElementById('issueEmail').value,
+            email: emailVal,
             department: document.getElementById('issueDepartment').value
         };
 
