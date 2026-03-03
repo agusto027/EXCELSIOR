@@ -238,8 +238,8 @@ function renderBookGrid(booksToRender) {
             <div class="book-info">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap: 0.5rem;">
                     <h3 class="book-title" style="margin-bottom:0; flex:1;">${b['Book Name']}</h3>
-                    <button class="summary-btn" onclick="openViewModal('${b['Book ID']}')" title="Read Summary">
-                        <i class="fa-solid fa-feather-pointed"></i> Summary
+                    <button class="summary-btn" onclick="openViewModal('${b['Book ID']}')" title="Read Description">
+                        <i class="fa-solid fa-feather-pointed"></i> Description
                     </button>
                 </div>
                 <div class="book-author">By ${b['Author']}</div>
@@ -567,8 +567,8 @@ function openViewModal(bookId) {
     document.getElementById('viewBookAuthor').innerText = 'By ' + book['Author'];
 
     // Look for Summary or Description, or provide a fallback
-    const summary = book['Summary'] || book['Description'] || 'No summary is currently available for this book in the library archives.';
-    document.getElementById('viewBookSummary').innerText = summary;
+    const description = book['Summary'] || book['Description'] || 'No description is currently available for this book in the library archives.';
+    document.getElementById('viewBookSummary').innerText = description;
 
     viewBookModal.classList.add('active');
 }
