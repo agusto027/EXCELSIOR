@@ -238,8 +238,8 @@ function renderBookGrid(booksToRender) {
             <div class="book-info">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap: 0.5rem;">
                     <h3 class="book-title" style="margin-bottom:0; flex:1;">${b['Book Name']}</h3>
-                    <button class="summary-btn" onclick="openViewModal('${b['Book ID']}')" title="Read Discription">
-                        <i class="fa-solid fa-feather-pointed"></i> Discription
+                    <button class="summary-btn" onclick="openViewModal('${b['Book ID']}')" title="Read Summary">
+                        <i class="fa-solid fa-feather-pointed"></i> Summary
                     </button>
                 </div>
                 <div class="book-author">By ${b['Author']}</div>
