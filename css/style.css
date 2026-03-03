@@ -289,6 +289,33 @@ main {
     width: 100%;
 }
 
+.summary-btn {
+    background: rgba(226, 189, 68, 0.1);
+    color: var(--accent-gold);
+    border: 1px solid rgba(226, 189, 68, 0.3);
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.summary-btn:hover {
+    background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-dark) 100%);
+    color: var(--bg-dark);
+    border-color: transparent;
+    box-shadow: 0 4px 10px rgba(226, 189, 68, 0.3);
+    transform: translateY(-2px) scale(1.02);
+}
+
 /* --- Forms & Inputs --- */
 .form-group {
     margin-bottom: 1.5rem;

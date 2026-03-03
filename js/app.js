@@ -28,8 +28,10 @@ const toastMsg = document.getElementById('toastMessage');
 // Modals
 const issueModal = document.getElementById('issueModal');
 const rulesModal = document.getElementById('rulesModal');
+const viewBookModal = document.getElementById('viewBookModal');
 const closeModals = document.querySelectorAll('.close-modal');
 const closeRulesBtn = document.querySelector('.close-rules-btn');
+const closeViewBtn = document.querySelector('.close-view-btn');
 const issueForm = document.getElementById('issueForm');
 
 // --- Initialization ---
@@ -234,7 +236,12 @@ function renderBookGrid(booksToRender) {
                 <span class="book-category">${b['Category'] || 'General'}</span>
             </div>
             <div class="book-info">
-                <h3 class="book-title">${b['Book Name']}</h3>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap: 0.5rem;">
+                    <h3 class="book-title" style="margin-bottom:0; flex:1;">${b['Book Name']}</h3>
+                    <button class="summary-btn" onclick="openViewModal('${b['Book ID']}')" title="Read Discription">
+                        <i class="fa-solid fa-feather-pointed"></i> Discription
+                    </button>
+                </div>
                 <div class="book-author">By ${b['Author']}</div>
                 
                 <div class="book-stats">
@@ -242,7 +249,7 @@ function renderBookGrid(booksToRender) {
                     <div><span>ID</span> <span>${b['Book ID']}</span></div>
                 </div>
                 
-                <div class="book-actions">
+                <div class="book-actions" style="display:flex; flex-direction:column; gap:0.5rem; margin-top:auto;">
                     ${isAvailable
                 ? `<button class="btn btn-primary btn-block" onclick="openIssueModal('${b['Book ID']}', '${b['Book Name'].replace(/'/g, "\\'")}')">
                             <i class="fa-solid fa-hand-holding-hand"></i> Request Issue
@@ -552,6 +559,20 @@ function renderAdminDashboard() {
 
 // --- Action Functions ---
 
+function openViewModal(bookId) {
+    const book = state.books.find(b => b['Book ID'] === bookId);
+    if (!book) return;
+
+    document.getElementById('viewBookTitle').innerText = book['Book Name'];
+    document.getElementById('viewBookAuthor').innerText = 'By ' + book['Author'];
+
+    // Look for Summary or Description, or provide a fallback
+    const summary = book['Summary'] || book['Description'] || 'No summary is currently available for this book in the library archives.';
+    document.getElementById('viewBookSummary').innerText = summary;
+
+    viewBookModal.classList.add('active');
+}
+
 function openIssueModal(bookId, bookName) {
     document.getElementById('issueBookId').value = bookId;
     document.getElementById('issueBookName').value = bookName;
@@ -563,6 +584,7 @@ function initModals() {
         btn.addEventListener('click', () => {
             if (issueModal) issueModal.classList.remove('active');
             if (rulesModal) rulesModal.classList.remove('active');
+            if (viewBookModal) viewBookModal.classList.remove('active');
         });
     });
 
@@ -572,10 +594,17 @@ function initModals() {
         });
     }
 
+    if (closeViewBtn) {
+        closeViewBtn.addEventListener('click', () => {
+            if (viewBookModal) viewBookModal.classList.remove('active');
+        });
+    }
+
     // Close on outside click
     window.addEventListener('click', (e) => {
         if (e.target === issueModal) issueModal.classList.remove('active');
         if (e.target === rulesModal) rulesModal.classList.remove('active');
+        if (e.target === viewBookModal) viewBookModal.classList.remove('active');
     });
 
     issueForm.addEventListener('submit', async (e) => {

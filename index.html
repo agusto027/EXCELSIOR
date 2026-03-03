@@ -107,6 +107,27 @@
         </div>
     </div>
 
+    <!-- View Book Modal -->
+    <div class="modal" id="viewBookModal">
+        <div class="modal-content fade-in-up">
+            <div class="modal-header">
+                <h2>Book Details</h2>
+                <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="viewBookContent" style="margin-bottom: 1.5rem;">
+                <h3 id="viewBookTitle" style="color:var(--accent-gold); margin-bottom: 0.5rem; font-size: 1.5rem;"></h3>
+                <p id="viewBookAuthor" style="color:var(--text-muted); font-style: italic; margin-bottom: 1rem;"></p>
+                <div
+                    style="background: var(--bg-dark); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <p id="viewBookSummary" style="color:var(--text-primary); line-height: 1.6;"></p>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-block close-view-btn">
+                Close
+            </button>
+        </div>
+    </div>
+
     <!-- Rules Modal -->
     <div class="modal" id="rulesModal">
         <div class="modal-content fade-in-up" style="max-height: 80vh; overflow-y: auto;">
