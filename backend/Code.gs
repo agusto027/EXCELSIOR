@@ -1,6 +1,6 @@
 // Code.gs - Apps Script Backend for Excelsior Library
 
-const ADMIN_EMAIL = "anupamdubey0027@gmail.com";
+const ADMIN_EMAIL = "excelsior.ietlko@gmail.com";
 
 // Get Sheet
 function getSheet(name) {
@@ -75,6 +75,12 @@ function doPost(e) {
 
     if(action === 'addBook')
       return jsonOutput(addBook(data));
+
+    if(action === 'removeBook')
+      return jsonOutput(removeBook(data));
+
+    if(action === 'editBook')
+      return jsonOutput(editBook(data));
 
     if(action === 'sendReminder')
       return jsonOutput(sendReminder(data));
@@ -725,4 +731,57 @@ function sendReminder(data) {
   logAdminAction(`Sent Return Reminder`, 'N/A', studentName, adminName);
   
   return { status: "success", message: "Reminder email sent successfully." };
+}
+
+/*********************
+ * REMOVE BOOK
+ *********************/
+function removeBook(data) {
+  const sheet = getSheet('Book Inventory');
+  const values = sheet.getDataRange().getValues();
+  
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]).trim() === String(data.bookId).trim()) {
+      sheet.deleteRow(i + 1);
+      
+      const adminName = data.adminName || 'Excelsior Admin';
+      logAdminAction(`Removed Book`, data.bookId, 'N/A', adminName);
+      
+      return { status: "success", message: "Book successfully removed from catalogue." };
+    }
+  }
+  
+  return { status: "error", message: "Book ID not found in the catalogue." };
+}
+
+/*********************
+ * EDIT BOOK
+ *********************/
+function editBook(data) {
+  const sheet = getSheet('Book Inventory');
+  const values = sheet.getDataRange().getValues();
+  
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]).trim() === String(data.bookId).trim()) {
+      const row = i + 1;
+      const currentIssued = values[i][6]; // Issued Copies
+      
+      const newTotal = parseInt(data.totalCopies);
+      let newAvailable = newTotal - currentIssued;
+      if (newAvailable < 0) newAvailable = 0; // Safeguard if copies are reduced below issued
+      
+      sheet.getRange(row, 2).setValue(data.bookName);
+      sheet.getRange(row, 3).setValue(data.author);
+      sheet.getRange(row, 4).setValue(data.category);
+      sheet.getRange(row, 5).setValue(newTotal); // Total Copies
+      sheet.getRange(row, 6).setValue(newAvailable); // Computed Available Copies
+      
+      const adminName = data.adminName || 'Excelsior Admin';
+      logAdminAction(`Edited Book Details`, data.bookId, 'N/A', adminName);
+      
+      return { status: "success", message: "Book details updated in analogue archives." };
+    }
+  }
+  
+  return { status: "error", message: "Book ID not found in the catalogue." };
 }
