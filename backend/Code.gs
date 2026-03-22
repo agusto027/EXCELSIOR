@@ -76,11 +76,11 @@ function doPost(e) {
     if(action === 'addBook')
       return jsonOutput(addBook(data));
 
-    if(action === 'removeBook')
-      return jsonOutput(removeBook(data));
-
     if(action === 'editBook')
       return jsonOutput(editBook(data));
+
+    if(action === 'removeBook')
+      return jsonOutput(removeBook(data));
 
     if(action === 'sendReminder')
       return jsonOutput(sendReminder(data));
@@ -734,27 +734,6 @@ function sendReminder(data) {
 }
 
 /*********************
- * REMOVE BOOK
- *********************/
-function removeBook(data) {
-  const sheet = getSheet('Book Inventory');
-  const values = sheet.getDataRange().getValues();
-  
-  for (let i = 1; i < values.length; i++) {
-    if (String(values[i][0]).trim() === String(data.bookId).trim()) {
-      sheet.deleteRow(i + 1);
-      
-      const adminName = data.adminName || 'Excelsior Admin';
-      logAdminAction(`Removed Book`, data.bookId, 'N/A', adminName);
-      
-      return { status: "success", message: "Book successfully removed from catalogue." };
-    }
-  }
-  
-  return { status: "error", message: "Book ID not found in the catalogue." };
-}
-
-/*********************
  * EDIT BOOK
  *********************/
 function editBook(data) {
@@ -762,24 +741,49 @@ function editBook(data) {
   const values = sheet.getDataRange().getValues();
   
   for (let i = 1; i < values.length; i++) {
-    if (String(values[i][0]).trim() === String(data.bookId).trim()) {
+    if (values[i][0] === data.originalBookId) {
       const row = i + 1;
-      const currentIssued = values[i][6]; // Issued Copies
+      const currentIssued = Number(values[i][6]) || 0;
+      const newTotal = Number(data.totalCopies);
+      const newAvailable = newTotal - currentIssued;
       
-      const newTotal = parseInt(data.totalCopies);
-      let newAvailable = newTotal - currentIssued;
-      if (newAvailable < 0) newAvailable = 0; // Safeguard if copies are reduced below issued
+      if (newAvailable < 0) {
+        return { status: "error", message: "Cannot reduce total copies below currently issued copies." };
+      }
       
+      sheet.getRange(row, 1).setValue(data.bookId);
       sheet.getRange(row, 2).setValue(data.bookName);
       sheet.getRange(row, 3).setValue(data.author);
       sheet.getRange(row, 4).setValue(data.category);
-      sheet.getRange(row, 5).setValue(newTotal); // Total Copies
-      sheet.getRange(row, 6).setValue(newAvailable); // Computed Available Copies
+      sheet.getRange(row, 5).setValue(newTotal);
+      sheet.getRange(row, 6).setValue(newAvailable);
       
       const adminName = data.adminName || 'Excelsior Admin';
       logAdminAction(`Edited Book Details`, data.bookId, 'N/A', adminName);
       
-      return { status: "success", message: "Book details updated in analogue archives." };
+      return { status: "success", message: "Book updated successfully." };
+    }
+  }
+  
+  return { status: "error", message: "Original Book ID not found in catalogue." };
+}
+
+/*********************
+ * REMOVE BOOK
+ *********************/
+function removeBook(data) {
+  const sheet = getSheet('Book Inventory');
+  const values = sheet.getDataRange().getValues();
+
+  
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] === data.bookId) {
+      sheet.deleteRow(i + 1);
+      
+      const adminName = data.adminName || 'Excelsior Admin';
+      logAdminAction(`Removed Book`, data.bookId, 'N/A', adminName);
+      
+      return { status: "success", message: "Book successfully removed from catalogue." };
     }
   }
   

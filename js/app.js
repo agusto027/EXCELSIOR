@@ -1,7 +1,7 @@
 // app.js - Frontend Logic for Excelsior Library
 
 // Configuration
-const API_URL = "https://script.google.com/macros/s/AKfycbydTpilxrrOQFxv2VgTK40ej8dfzoX0hyENHGgXoKnHn-voPaku-y9Ul7kkqx0IdS7W/exec"; // Update this with actual Apps Script URL
+const API_URL = "https://script.google.com/macros/s/AKfycbzvJ7qDefQ-QaeXiXZcn8PUObnRyHvPuBnORhLfmB_cXCbHS3ve9Sij0hMhr3uZ9qxs/exec"; // Update this with actual Apps Script URL
 const ADMIN_PASSWORD = "admin@excelsior27"; // Simple frontend check, not for secure systems
 
 // State Management
@@ -550,14 +550,211 @@ function renderAdminDashboard() {
             <h3 class="mb-1 mt-2">Active Issues & Reminders</h3>
             ${activeHtml}
             
+            <h3 class="mb-1 mt-2"><i class="fa-solid fa-book-medical"></i> Add New Book to Catalogue</h3>
+            <div class="table-container fade-in-up" style="animation-delay: 0.2s; padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                <form id="addBookForm">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label>Book ID</label>
+                            <input type="text" id="newBookId" required placeholder="Ex: EXC-001">
+                        </div>
+                        <div class="form-group">
+                            <label>Book Title</label>
+                            <input type="text" id="newBookName" required placeholder="Ex: The Great Gatsby">
+                        </div>
+                        <div class="form-group">
+                            <label>Author</label>
+                            <input type="text" id="newBookAuthor" required placeholder="Ex: F. Scott Fitzgerald">
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <input type="text" id="newBookCategory" required placeholder="Ex: Fiction">
+                        </div>
+                        <div class="form-group">
+                            <label>Total Copies</label>
+                            <input type="number" id="newBookCopies" required min="1" value="1">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;"><i class="fa-solid fa-plus"></i> Add Book to Archives</button>
+                </form>
+            </div>
+
+            <h3 class="mb-1 mt-2"><i class="fa-solid fa-trash-can" style="color:var(--danger);"></i> Remove Book from Catalogue</h3>
+            <div class="table-container fade-in-up" style="animation-delay: 0.3s; padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                <form id="removeBookForm">
+                    <div class="form-group" style="max-width: 400px;">
+                        <label>Book ID to Remove</label>
+                        <div style="display: flex; gap: 1rem;">
+                            <input type="text" id="removeBookId" required placeholder="Ex: EXC-001" style="flex: 1;">
+                            <button type="submit" class="btn btn-secondary" style="border-color: var(--danger); color: var(--danger);"><i class="fa-solid fa-trash"></i> Remove</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <h3 class="mb-1 mt-2"><i class="fa-solid fa-pen-to-square" style="color:var(--accent-gold);"></i> Edit Book Details</h3>
+            <div class="table-container fade-in-up" style="animation-delay: 0.4s; padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                <div class="form-group" style="max-width: 400px; margin-bottom: 0;">
+                    <label>Enter Book ID to Edit</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="text" id="editSearchId" placeholder="Ex: EXC-001" style="flex: 1;">
+                        <button class="btn btn-secondary" onclick="loadBookForEdit()"><i class="fa-solid fa-magnifying-glass"></i> Fetch</button>
+                    </div>
+                </div>
+                
+                <form id="editBookForm" style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <input type="hidden" id="editBookOriginalId">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label>Book ID</label>
+                            <input type="text" id="editBookId" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Book Title</label>
+                            <input type="text" id="editBookName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Author</label>
+                            <input type="text" id="editBookAuthor" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <input type="text" id="editBookCategory" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Copies</label>
+                            <input type="number" id="editBookCopies" required min="1">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;"><i class="fa-solid fa-floppy-disk"></i> Save Modifications</button>
+                </form>
+            </div>
+
             <h3 class="mb-1 mt-2">Inventory Management</h3>
             <p>To bulk edit or view complete logs, please open the <a href="https://sheets.google.com" target="_blank" style="text-decoration:underline;">Google Sheet directly <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.8rem;"></i></a>.</p>
             <p style="color:var(--text-muted); font-size:0.9rem;">From Google Sheets, you can edit Book Details, directly update available copies, or manage specific user blocks.</p>
         </div>
     `;
+
+    const addBookForm = document.getElementById('addBookForm');
+    if (addBookForm) {
+        addBookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                bookId: document.getElementById('newBookId').value.trim(),
+                bookName: document.getElementById('newBookName').value.trim(),
+                author: document.getElementById('newBookAuthor').value.trim(),
+                category: document.getElementById('newBookCategory').value.trim(),
+                totalCopies: document.getElementById('newBookCopies').value
+            };
+
+            showLoader('Adding book to archives...');
+            try {
+                if (API_URL === "YOUR_WEB_APP_URL_HERE") throw new Error("API URL not configured.");
+                await apiPost('addBook', payload);
+                showToast("Book added successfully!", "success");
+                state.books = []; // Clear cached books so catalogue refreshes next time
+                e.target.reset(); // Clear form
+                // Also update dashboard stats
+                fetchDashboardData();
+            } catch (err) {
+                showToast("Failed to add book: " + err.message, "error");
+            } finally {
+                hideLoader();
+            }
+        });
+    }
+
+    const removeBookForm = document.getElementById('removeBookForm');
+    if (removeBookForm) {
+        removeBookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bookIdToRemove = document.getElementById('removeBookId').value.trim();
+            
+            if (!confirm(`Are you sure you want to completely remove Book ID: ${bookIdToRemove}? This action cannot be undone.`)) return;
+
+            showLoader('Removing book from archives...');
+            try {
+                if (API_URL === "YOUR_WEB_APP_URL_HERE") throw new Error("API URL not configured.");
+                await apiPost('removeBook', { bookId: bookIdToRemove, adminName: 'Excelsior Admin' });
+                showToast(`Book ${bookIdToRemove} removed successfully!`, "success");
+                state.books = []; // Clear cached books
+                e.target.reset(); // Clear form
+                fetchDashboardData();
+            } catch (err) {
+                showToast("Failed to remove book: " + err.message, "error");
+            } finally {
+                hideLoader();
+            }
+        });
+    }
+
+    const editBookForm = document.getElementById('editBookForm');
+    if (editBookForm) {
+        editBookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                originalBookId: document.getElementById('editBookOriginalId').value,
+                bookId: document.getElementById('editBookId').value.trim(),
+                bookName: document.getElementById('editBookName').value.trim(),
+                author: document.getElementById('editBookAuthor').value.trim(),
+                category: document.getElementById('editBookCategory').value.trim(),
+                totalCopies: document.getElementById('editBookCopies').value
+            };
+
+            showLoader('Saving book modifications...');
+            try {
+                if (API_URL === "YOUR_WEB_APP_URL_HERE") throw new Error("API URL not configured.");
+                await apiPost('editBook', payload);
+                showToast("Book details updated successfully!", "success");
+                state.books = []; // Clear cached books
+                e.target.style.display = 'none'; // Hide form
+                document.getElementById('editSearchId').value = '';
+                fetchDashboardData();
+            } catch (err) {
+                showToast("Failed to update book: " + err.message, "error");
+            } finally {
+                hideLoader();
+            }
+        });
+    }
 }
 
 // --- Action Functions ---
+
+window.loadBookForEdit = async function() {
+    const searchId = document.getElementById('editSearchId').value.trim();
+    if (!searchId) return;
+    
+    showLoader('Fetching book details...');
+    try {
+        if (state.books.length === 0) {
+            state.books = await apiGet('getBooks');
+        }
+        
+        const bookToEdit = state.books.find(b => b['Book ID'] === searchId);
+        
+        if (!bookToEdit) {
+            showToast(`Book ID ${searchId} not found in archives.`, "error");
+            hideLoader();
+            return;
+        }
+        
+        document.getElementById('editBookOriginalId').value = bookToEdit['Book ID'];
+        document.getElementById('editBookId').value = bookToEdit['Book ID'];
+        document.getElementById('editBookName').value = bookToEdit['Book Name'];
+        document.getElementById('editBookAuthor').value = bookToEdit['Author'];
+        document.getElementById('editBookCategory').value = bookToEdit['Category'];
+        document.getElementById('editBookCopies').value = bookToEdit['Total Copies'];
+        
+        document.getElementById('editBookForm').style.display = 'block';
+        showToast("Book loaded for editing.", "success");
+    } catch (err) {
+        showToast("Failed to fetch book: " + err.message, "error");
+    } finally {
+        hideLoader();
+    }
+};
 
 function openViewModal(bookId) {
     const book = state.books.find(b => b['Book ID'] === bookId);
